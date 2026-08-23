@@ -143,7 +143,6 @@ set(EMCC_ARGS
   --post-js ${CMAKE_CURRENT_SOURCE_DIR}/helpers.js
   ${MEMORY_GROWTH_FLAG}
   -s ALLOW_TABLE_GROWTH=1
-  -s WASM_BIGINT=0
   ${ENVIRONMENT_FLAG}
   -s EXPORT_ES6=1
   -s EXPORT_NAME="Jolt"
@@ -241,7 +240,7 @@ add_custom_command(
 
 add_custom_command(
 	OUTPUT glue.o
-	COMMAND emcc glue.cpp ${EMCC_GLUE_ARGS} -o glue.o
+	COMMAND em++ glue.cpp ${EMCC_GLUE_ARGS} -o glue.o
 	DEPENDS glue.cpp ${JOLT_HEADER_FILE}
 	COMMENT "Building JoltPhysics.js bindings"
 	VERBATIM)
@@ -252,7 +251,7 @@ if (NOT BUILD_WASM_COMPAT_ONLY)
 		AND NOT ENABLE_SIMD) # Not compatible with SIMD due to error: 'unhandled unaligned load'
 		add_custom_command(
 			OUTPUT ${OUTPUT_BASE_NAME}.js
-			COMMAND emcc glue.o $<TARGET_FILE:Jolt> ${EMCC_JS_ARGS} -o ${OUTPUT_BASE_NAME}.js
+			COMMAND em++ glue.o $<TARGET_FILE:Jolt> ${EMCC_JS_ARGS} -o ${OUTPUT_BASE_NAME}.js
 			DEPENDS jolt-bindings ${JOLT_FRONT_MATTER_FILE} ${JOLT_TARGETS} ${JOLT_IDL_FILE} ${JOLT_HEADER_FILE}
 			COMMENT "Building JoltPhysics.js javascript"
 			VERBATIM)
@@ -261,7 +260,7 @@ if (NOT BUILD_WASM_COMPAT_ONLY)
 
 	add_custom_command(
 		OUTPUT ${OUTPUT_BASE_NAME}.wasm.js ${OUTPUT_BASE_NAME}.wasm.wasm
-		COMMAND emcc glue.o $<TARGET_FILE:Jolt> ${EMCC_WASM_ARGS} -o ${OUTPUT_BASE_NAME}.wasm.js
+		COMMAND em++ glue.o $<TARGET_FILE:Jolt> ${EMCC_WASM_ARGS} -o ${OUTPUT_BASE_NAME}.wasm.js
 		COMMAND ${REPLACE_IMPORT} ${OUTPUT_BASE_NAME}.wasm.js
 		DEPENDS jolt-bindings ${JOLT_FRONT_MATTER_FILE} ${JOLT_TARGETS} ${JOLT_IDL_FILE} ${JOLT_HEADER_FILE}
 		COMMENT "Building JoltPhysics.js webassembly"
@@ -271,7 +270,7 @@ endif()
 
 add_custom_command(
 	OUTPUT ${OUTPUT_BASE_NAME}.wasm-compat.js
-	COMMAND emcc glue.o $<TARGET_FILE:Jolt> ${EMCC_WASM_COMPAT_ARGS} -o ${OUTPUT_BASE_NAME}.wasm-compat.js
+	COMMAND em++ glue.o $<TARGET_FILE:Jolt> ${EMCC_WASM_COMPAT_ARGS} -o ${OUTPUT_BASE_NAME}.wasm-compat.js
 	COMMAND ${REPLACE_IMPORT} ${OUTPUT_BASE_NAME}.wasm-compat.js
 	DEPENDS jolt-bindings ${JOLT_FRONT_MATTER_FILE} ${JOLT_TARGETS} ${JOLT_IDL_FILE} ${JOLT_HEADER_FILE}
 	COMMENT "Building JoltPhysics.js compat webassembly"
