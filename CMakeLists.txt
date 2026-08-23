@@ -86,10 +86,6 @@ else()
 	set(REMOVE_THREAD_LOCAL sed -i.bak -e "s:thread_local::g" glue.cpp)
 endif()
 
-# Replace 'replace_by_import' by 'import' in the generated JS code to workaround a bug in emscripten
-# See: https://github.com/jrouwe/JoltPhysics.js/issues/245
-set(REPLACE_IMPORT sed -i -e "s:replace_by_import:import:g")
-
 # Enable SIMD flags
 if (ENABLE_SIMD)
 	set(ENABLE_SIMD_FLAG
@@ -136,9 +132,6 @@ set(EMCC_ARGS
   --extern-pre-js ${JOLT_FRONT_MATTER_FILE}
   --post-js glue.js
   --closure=1
-  --closure-args="--dynamic_import_alias=replace_by_import"
-  --closure-args="--externs"
-  --closure-args="${CMAKE_CURRENT_SOURCE_DIR}/extern-import.js"
   ${MULTI_THREADED_FLAG}
   --post-js ${CMAKE_CURRENT_SOURCE_DIR}/helpers.js
   ${MEMORY_GROWTH_FLAG}
@@ -261,7 +254,6 @@ if (NOT BUILD_WASM_COMPAT_ONLY)
 	add_custom_command(
 		OUTPUT ${OUTPUT_BASE_NAME}.wasm.js ${OUTPUT_BASE_NAME}.wasm.wasm
 		COMMAND em++ glue.o $<TARGET_FILE:Jolt> ${EMCC_WASM_ARGS} -o ${OUTPUT_BASE_NAME}.wasm.js
-		COMMAND ${REPLACE_IMPORT} ${OUTPUT_BASE_NAME}.wasm.js
 		DEPENDS jolt-bindings ${JOLT_FRONT_MATTER_FILE} ${JOLT_TARGETS} ${JOLT_IDL_FILE} ${JOLT_HEADER_FILE}
 		COMMENT "Building JoltPhysics.js webassembly"
 		VERBATIM)
@@ -271,7 +263,6 @@ endif()
 add_custom_command(
 	OUTPUT ${OUTPUT_BASE_NAME}.wasm-compat.js
 	COMMAND em++ glue.o $<TARGET_FILE:Jolt> ${EMCC_WASM_COMPAT_ARGS} -o ${OUTPUT_BASE_NAME}.wasm-compat.js
-	COMMAND ${REPLACE_IMPORT} ${OUTPUT_BASE_NAME}.wasm-compat.js
 	DEPENDS jolt-bindings ${JOLT_FRONT_MATTER_FILE} ${JOLT_TARGETS} ${JOLT_IDL_FILE} ${JOLT_HEADER_FILE}
 	COMMENT "Building JoltPhysics.js compat webassembly"
 	VERBATIM)
